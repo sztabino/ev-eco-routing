@@ -1,35 +1,34 @@
 from src.route_manager import RouteManager
-from src.vehicle_model import PhysicsVehicleModel, VehicleDatabase, VehicleParameters
+from src.vehicle_model import PhysicsVehicleModel, VehicleDatabase
+from src.optimizer import SpeedProfileOptimizer, OptimizationConfig
 
-def test_pipeline():
-    # generowanie trasy
+def test_optimization():
+    # tworzenie dluzszej trasy testowej (20 km) z gorkami
     manager = RouteManager()
-    route = manager.generate_synthetic_route(total_distance_m=10000.0, step_m=200.0)
-    speeds = [s.speed_limit_kmh for s in route.segments]
+    route = manager.generate_synthetic_route(total_distance_m=20000.0, step_m=200.0)
 
-    print("dostepne auta w bazie:", VehicleDatabase.list_models())
+    # pojazd
+    params = VehicleDatabase.get_vehicle("Tesla Model 3 Standard")
+    car = PhysicsVehicleModel(params)
 
-    # test 1: gotowy preset z bazy (tesla)
-    tesla_params = VehicleDatabase.get_vehicle("Tesla Model 3 Standard")
-    tesla_model = PhysicsVehicleModel(tesla_params)
-    res_tesla = tesla_model.simulate_route(route, speeds)
-    print(f"[{tesla_params.name}] energia: {res_tesla.total_energy_kwh:.3f} kwh, czas: {res_tesla.total_time_s / 60:.2f} min, soc: {res_tesla.battery_soc_end*100:.1f}%")
-
-    # test 2: wlasne auto zdefiniowane z reki
-    custom_params = VehicleParameters(
-        name="Wlasny EV",
-        mass_kg=1200.0,
-        drag_coefficient=0.20,
-        frontal_area_m2=2.0,
-        rolling_resistance_coeff=0.008,
-        battery_capacity_kwh=45.0,
-        max_regen_power_kw=40.0,
-        powertrain_efficiency=0.95,
-        regen_efficiency=0.85
+    # konfiguracja optymalizatora
+    config = OptimizationConfig(
+        weight_energy=1.0,
+        weight_time=0.5,
+        penalty_jerk=0.2,
+        population_size=30,
+        generations=40
     )
-    custom_model = PhysicsVehicleModel(custom_params)
-    res_custom = custom_model.simulate_route(route, speeds)
-    print(f"[{custom_params.name}] energia: {res_custom.total_energy_kwh:.3f} kwh, czas: {res_custom.total_time_s / 60:.2f} min, soc: {res_custom.battery_soc_end*100:.1f}%")
+
+    optimizer = SpeedProfileOptimizer(car, config)
+    print("rozpoczynam optymalizacje profilu...")
+    report = optimizer.optimize(route)
+
+    print("\n--- wyniki optymalizacji ---")
+    print(f"poczatkowa energia: {report.baseline_result.total_energy_kwh:.3f} kwh")
+    print(f"optymalna energia:  {report.optimized_result.total_energy_kwh:.3f} kwh")
+    print(f"zaoszczedzono energii: {report.energy_saved_pct:.2f}%")
+    print(f"roznica w czasie jazdy: {report.time_diff_min:+.2f} min")
 
 if __name__ == "__main__":
-    test_pipeline()
+    test_optimization()
