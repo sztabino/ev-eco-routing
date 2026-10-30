@@ -36,7 +36,7 @@ Projekt wymaga Pythona w wersji 3.10+.
 
 1. Klonowanie repozytorium:
 ```bash
-git clone https://github.com/TWOJ_NICK/ev-eco-routing.git
+git clone https://github.com/sztabino/ev-eco-routing.git
 cd ev-eco-routing
 ```
 
