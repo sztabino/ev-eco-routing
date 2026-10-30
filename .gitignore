@@ -1,0 +1,11 @@
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+data/routes_cache/*
+!data/routes_cache/.gitkeep
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
