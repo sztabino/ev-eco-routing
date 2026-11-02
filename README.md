@@ -32,11 +32,18 @@ ev-eco-routing/
 
 ### 1. Model dynamiki wzdłużnej pojazdu
 Całkowita siła oporu ruchu modelowana jest jako suma oporów toczenia, aerodynamiki oraz siły grawitacji na wzniesieniach:
+
 $$F_{total} = m g c_r + \frac{1}{2} \rho_{air} C_d A v^2 + m g \cdot p$$
+
 gdzie $p = \frac{\Delta h}{\Delta s}$ reprezentuje procentowe nachylenie jezdni pobierane z numerycznego modelu terenu NASA SRTM.
 
 Moc na zaciskach baterii uwzględnia sprawność układu napędowego oraz nieliniowe nasycenie prądu ładowania podczas rekuperacji:
-$$P_{bat} = \begin{cases} \frac{F_{total} \cdot v}{\eta_{drive}} & \text{dla } F_{total} \ge 0 \\ -\min\left(|F_{total} \cdot v| \cdot \eta_{regen}, \; P_{regen}^{max}\right) & \text{dla } F_{total} < 0 \end{cases}$$
+
+- **Trakcja ($F_{total} \ge 0$):**
+$$P_{bat} = \frac{F_{total} \cdot v}{\eta_{drive}}$$
+
+- **Rekuperacja ($F_{total} < 0$):**
+$$P_{bat} = -\min\left(|F_{total} \cdot v| \cdot \eta_{regen}, \; P_{regen}^{max}\right)$$
 
 ### 2. Wielokryterialna funkcja celu (Trade-off)
 Optymalizator minimalizuje znormalizowany koszt przejazdu łączący zużycie energii, czas podróży oraz karę za szarpanie (pochodną przyspieszenia):
